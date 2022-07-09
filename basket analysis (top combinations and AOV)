@@ -1,0 +1,46 @@
+/Identification of top categories/
+
+select
+a.category category1,
+b.category category2,b.orderuid orderuid,b.customer_id, concat(a.category, b.category) as combination
+ from `Order-Data` a
+ join `Order-Data` b
+ on a.orderuid=b.orderuid
+ and a.category!=b.category
+ and a.category<b.category
+ 
+
+
+/AOV of orders with combinations identified/
+ 
+A AS(
+SELECT
+x.country AS Market,
+x.subtotal_eur AS subtotal,
+x.order_uid AS orderid
+FROM
+`Revenue-Data` AS x ),
+B AS (
+SELECT
+orderuid,
+STRING_AGG(category) AS combo
+FROM
+`Order-Data` AS y
+GROUP BY
+1)
+SELECT
+A.Market,
+SUM(A.subtotal) AS GMV,
+COUNT(DISTINCT A.orderid) AS orders
+FROM
+A
+JOIN
+B
+ON
+A.orderid = B.orderuid
+AND combo LIKE '%Beverages%'
+AND combo LIKE '%Dairy%'
+GROUP BY
+1
+ORDER BY
+1
